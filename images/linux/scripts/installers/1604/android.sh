@@ -4,9 +4,10 @@
 ##  Desc:  Installs Android SDK
 ################################################################################
 
+set -e
+
 # Source the helpers for use with the script
 source $HELPER_SCRIPTS/document.sh
-source $HELPER_SCRIPTS/apt.sh
 
 # Set env variable for SDK Root (https://developer.android.com/studio/command-line/variables)
     ANDROID_ROOT=/usr/local/lib/android
@@ -16,16 +17,33 @@ source $HELPER_SCRIPTS/apt.sh
 # ANDROID_HOME is deprecated, but older versions of Gradle rely on it
 echo "ANDROID_HOME=${ANDROID_SDK_ROOT}" | tee -a /etc/environment
 
+# Create android sdk directory
+mkdir -p ${ANDROID_SDK_ROOT}
+
 # Download the latest command line tools so that we can accept all of the licenses.
 # See https://developer.android.com/studio/#command-tools
 wget -O android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-unzip android-sdk.zip -d ${ANDROID_ROOT}
+unzip android-sdk.zip -d ${ANDROID_SDK_ROOT}
 rm -f android-sdk.zip
 
+# Check sdk manager installation
+/usr/local/lib/android/sdk/tools/bin/sdkmanager --list 1>/dev/null
+if [ $? -eq 0 ]
+then
+    echo "Android SDK manager was installed"
+else
+    echo "Android SDK manager was not installed"
+    exit 1
+fi
+
+# Add required permissions
+chmod -R a+X ${ANDROID_SDK_ROOT}
+
 # Install the following SDKs and build tools, passing in "y" to accept licenses.
-echo "y" | ${ANDROID_ROOT}/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
+echo "y" | ${ANDROID_SDK_ROOT}/tools/bin/sdkmanager \
     "ndk-bundle" \
     "platform-tools" \
+    "platforms;android-30" \
     "platforms;android-29" \
     "platforms;android-28" \
     "platforms;android-27" \
@@ -39,6 +57,8 @@ echo "y" | ${ANDROID_ROOT}/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
     "platforms;android-17" \
     "platforms;android-15" \
     "platforms;android-10" \
+    "build-tools;30.0.0" \
+    "build-tools;29.0.3" \
     "build-tools;29.0.2" \
     "build-tools;29.0.0" \
     "build-tools;28.0.3" \
@@ -81,6 +101,7 @@ echo "y" | ${ANDROID_ROOT}/tools/bin/sdkmanager --sdk_root=${ANDROID_SDK_ROOT} \
     "add-ons;addon-google_apis-google-22" \
     "add-ons;addon-google_apis-google-21" \
     "cmake;3.6.4111459" \
+    "cmake;3.10.2.4988404" \
     "patcher;v4"
 
 # Document what was added to the image
@@ -96,6 +117,7 @@ DocumentInstalledItem "Android Support Repository 47.0.0"
 DocumentInstalledItem "Android Solver for ConstraintLayout 1.0.2"
 DocumentInstalledItem "Android Solver for ConstraintLayout 1.0.1"
 DocumentInstalledItem "Android SDK Platform-Tools $(cat ${ANDROID_SDK_ROOT}/platform-tools/source.properties 2>&1 | grep Pkg.Revision | cut -d '=' -f 2)"
+DocumentInstalledItem "Android SDK Platform 30"
 DocumentInstalledItem "Android SDK Platform 29"
 DocumentInstalledItem "Android SDK Platform 28"
 DocumentInstalledItem "Android SDK Platform 27"
@@ -110,6 +132,8 @@ DocumentInstalledItem "Android SDK Platform 17"
 DocumentInstalledItem "Android SDK Platform 15"
 DocumentInstalledItem "Android SDK Platform 10"
 DocumentInstalledItem "Android SDK Patch Applier v4"
+DocumentInstalledItem "Android SDK Build-Tools 30.0.0"
+DocumentInstalledItem "Android SDK Build-Tools 29.0.3"
 DocumentInstalledItem "Android SDK Build-Tools 29.0.2"
 DocumentInstalledItem "Android SDK Build-Tools 29.0.0"
 DocumentInstalledItem "Android SDK Build-Tools 28.0.3"
