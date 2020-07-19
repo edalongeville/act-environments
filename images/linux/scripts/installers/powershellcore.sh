@@ -9,11 +9,11 @@ source $HELPER_SCRIPTS/document.sh
 source $HELPER_SCRIPTS/os.sh
 
 # Install Powershell
-if isUbuntu20 ; then
-    snap install powershell --classic --channel=edge/useedge
-fi
+#if isUbuntu20 ; then
+#    snap install powershell --classic --channel=edge/useedge
+#fi
 
-if isUbuntu16 || isUbuntu18 ; then
+if isUbuntu16 || isUbuntu18 || isUbuntu20; then
     apt-get install -y powershell
 fi
 
